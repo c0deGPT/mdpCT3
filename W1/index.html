@@ -19,9 +19,22 @@
 
         triggerButton.addEventListener('click', ()=>{
             fetch('https://www.thecocktaildb.com/api/json/v1/1/random.php')
-                .then((response) => {
-                    console.log(response)
-                })
+                .then((response => response.json()))
+                .then((data =>{
+                    let drinkData = data.drinks[0]
+                    console.log(drinkData)
+
+                    let drinkName = drinkData.strDrink
+                    let drinkCategory = drinkData.strCategory
+                    let drinkIMG = drinkData.strDrinkThumb
+
+                    let drinkHTML = `
+                    <h2>${drinkName}</h2>
+                    <img src="${drinkIMG}" alt="${drinkName}"/>
+                    <p>${drinkCategory}</p>
+                    `
+                    mainContent.innerHTML =drinkHTML
+                }))
         })
     </script>
 </body>
