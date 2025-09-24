@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Documentation</title>
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <div class="desc">
+            <p class= "desc-text">1.I want to use the PokeAPI, but since the API is accessed by either ID or name, I use Math.random() * 1010 to generate a random number within the range, and Math.floor() to convert it into an integer.</p>
+            <img src="processes/1-1.png" class="desc-img" alt="Qute Quokka 0">
+            <img src="processes/1-2.png" class="desc-img" alt="Qute Quokka 1">
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">2.However, I ran into a problem later: I tried to extract data the same way as with the cocktail HTML, using const firstPokeman = data[0]; const pokemanName = firstPokeman.name, but when I tested it on the webpage, it couldn’t be read.</p>
+            <img src="processes/2-1.png" class="desc-img" alt="Qute Quokka 2">
+            <img src="processes/2-2.png" class="desc-img" alt="Qute Quokka 3">
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">3.I checked the original JSON format and realized that in the cocktail API, the data is stored inside the drinks[0] array, but PokeAPI doesn’t do this. So I can use the data directly without having to go one level deeper first.</p>
+            <img src="processes/3-1.png" class="desc-img" alt="Qute Quokka 4">
+            <img src="processes/3-2.png" class="desc-img" alt="Qute Quokka 5">
+            <img src="processes/3-3.png" class="desc-img" alt="Qute Quokka 6">
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">4.Moving forward, I added the Pokémon’s name along with its front and back images.</p>
+            <img src="processes/4-1.png" class="desc-img" alt="Qute Quokka 7">
+            <img src="processes/4-2.png" class="desc-img" alt="Qute Quokka 8">
+        </div>
+        
+        <div class="desc">
+            <p class= "desc-text">5.Next, I wanted to use the name from PokeAPI to locate a specific spirit in the Pokémon TCG JSON. I found the related filter description and tested it to see if I could get the matching content, and it worked.</p>
+            <img src="processes/5-1.png" class="desc-img" alt="Qute Quokka 9">
+            <img src="processes/5-2.png" class="desc-img" alt="Qute Quokka 10">
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">6.However, since pokemonName was defined locally, I couldn’t reference it inside triggerButton2. So I set up a global variable autoPokemonName. During testing, I also realized I needed to handle the requirement from the Pokémon TCG API that the first letter be capitalized.</p>
+            <img src="processes/6-1.png" class="desc-img" alt="Qute Quokka 11">
+            <img src="processes/6-2.png" class="desc-img" alt="Qute Quokka 12">
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">7.As for the final result, it might be because searching by name is too vague — after clicking the second button, it often takes around 30 seconds to 1 minute to respond.</p>
+            <img src="processes/7-1.png" class="desc-img" alt="Qute Quokka 13">
+            <img src="processes/7-2.png" class="desc-img" alt="Qute Quokka 14">
+            <img src="processes/7-3.png" class="desc-img" alt="Qute Quokka 15">
+        </div>
+    </main>
+</body>
+</html>
