@@ -11,64 +11,66 @@
             <a href="about.html">About</a>
         </nav>
         <h1>FetchAPI_assignment</h1>
-        <button id="startButton">1.Start here</button>
+        <button id="startButton">Start here(Wait 30s–1min)</button>
     </header>
     <main>
         <div id="main-content"></div>
-        <button id="secondButton">2.See pokemon cards(Wait 30s–1min)</button>
-        <div id="main-content2"></div>
     </main>
     <script>
         const triggerButton = document.getElementById("startButton")
         const mainContent = document.getElementById("main-content")
-        const triggerButton2 = document.getElementById("secondButton")
-        const mainContent2 = document.getElementById("main-content2")
 
+        const randomId = Math.floor(Math.random() * 1301)
         let autoPokemonName = null
 
-        triggerButton.addEventListener('click', () => {
-            const randomId = Math.floor(Math.random() * 1301)
-
+        const fetchPokemonData = () =>{
             fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`)
                 .then((response) => response.json())
-                .then((data) => {
-                    console.log(data)
-                    //const firstPokeman = data[0]
+                .then((data) => appendPokemonData(data))
+        }
 
-                    const pokemonName = data.name
-                    const pokemonFrontImage = data.sprites.front_default
-                    const pokemonBackImage = data.sprites.back_default
-
-                    autoPokemonName = pokemonName
-                    
-                    let pokemanHTML =`
-                    <h2>Spirit's name: ${pokemonName}</h2>
-                    <img src="${pokemonFrontImage}" alt="Front image of ${pokemonName}"/>
-                    <img src="${pokemonBackImage}" alt="Back image of ${pokemonName}"/>
-                    `
-                    mainContent.innerHTML = pokemanHTML
-                })
-        })
-
-        triggerButton2.addEventListener('click', () =>{
-            const uppercaseAutoPokemonName = autoPokemonName.charAt(0).toUpperCase() + autoPokemonName.slice(1)
-
+        const fetchPokemontcgData = (uppercaseAutoPokemonName) => {   
             fetch(`https://api.pokemontcg.io/v2/cards?q=name:${uppercaseAutoPokemonName}`)
-                .then((response)=> response.json())
-                .then((data) => {
-                    let pokemontcgData = data.data[0]
-                    console.log(pokemontcgData)
+                .then((response) => response.json())
+                .then((data) => appendPokemontcgData(data, uppercaseAutoPokemonName))
+        }
 
-                    const cardID = pokemontcgData.id
-                    const cardIMG = pokemontcgData.images.small
+        const appendPokemonData = (data) =>{
+            console.log(data)
 
-                    let pokemontcgHTML = `
-                    <h3>Card ID: ${cardID}</h3>
-                    <img src="${cardIMG}" alt="${uppercaseAutoPokemonName}"/>
-                    `
-                    mainContent2.innerHTML = pokemontcgHTML
-                })
-        })
+            const pokemonName = data.name
+            const pokemonFrontImage = data.sprites.front_default
+            const pokemonBackImage = data.sprites.back_default
+
+            autoPokemonName = pokemonName
+                    
+            let pokemanHTML =`
+            <h2>Spirit's name: ${pokemonName}</h2>
+            <img src="${pokemonFrontImage}" alt="Front image of ${pokemonName}"/>
+            <img src="${pokemonBackImage}" alt="Back image of ${pokemonName}"/>
+            `
+            mainContent.innerHTML = pokemanHTML
+            
+            const uppercaseAutoPokemonName = autoPokemonName.charAt(0).toUpperCase() + autoPokemonName.slice(1)
+            fetchPokemontcgData(uppercaseAutoPokemonName)
+        }
+
+        const appendPokemontcgData = (data, uppercaseAutoPokemonName) => {
+            let pokemontcgData = data.data[0]
+            console.log(pokemontcgData)
+
+            const cardID = pokemontcgData.id
+            const cardIMG = pokemontcgData.images.small
+            console.log(uppercaseAutoPokemonName)
+
+            let pokemontcgHTML = `
+            <h3>Card ID: ${cardID}</h3>
+            <img src="${cardIMG}" alt="${uppercaseAutoPokemonName}"/>
+            `
+            mainContent.innerHTML += pokemontcgHTML
+        }
+
+        triggerButton.addEventListener('click', fetchPokemonData)
     </script>
 </body>
 </html>
