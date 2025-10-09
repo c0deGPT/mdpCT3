@@ -1,33 +1,21 @@
-let TILES_X = 100
-let TILES_Y = 75
-
+let TILES_X, TILES_Y
 let TILE_W, TILE_H
-let FONT
 let CHARS = " ▆▇░░▒▓░"
 let contrastValue = 1.0
-let charInput
 
 let img
+let buffer
+let asciiCanvas
 
 function setup() {
-  TILES_X = 170
-  TILES_Y = 85
   createCanvas(600, 850)
 
-  textFont(FONT || 'monospace')
+  textFont('Menlo')
   textAlign(CENTER, CENTER)
-  textSize(TILE_H)
-
-  charInput = createInput(CHARS)
-  charInput.input(() => {
-    CHARS = charInput.value();
-    console.log("New characters: ", CHARS)
-  })
 
   let dropZone = select('canvas')
-  dropZone.dragOver(() => background(180))
-  dropZone.dragLeave(() => background(200))
-  dropZone.drop(handleFile, () => background(200))
+  dropZone.dragOver(() => background(150))
+  dropZone.drop(handleFile)
 }
 
 function handleFile(file) {
@@ -66,21 +54,11 @@ function handleFile(file) {
   }
 }
 
-function keyPressed() {
-  if (key === 'S' || key === 's') {
-    saveCanvas('grid_text', 'png')
-  }
-}
-
 function draw() {
   background("#FFFFFF")
 
   if (img) {
-    let buffer = createGraphics(TILES_X, TILES_Y)
-    buffer.background(0)
-
-    buffer.translate(buffer.width / 2, buffer.height / 2)
-    buffer.imageMode(CENTER)
+    buffer = createGraphics(TILES_X, TILES_Y)
     buffer.image(img, 0, 0, TILES_X, TILES_Y)
 
     for (let x = 0; x < TILES_X; x++) {
@@ -109,4 +87,10 @@ function draw() {
 
 function adjustContrast(value) {
   return constrain((value - 128) * contrastValue + 128, 0, 255)
+}
+
+function keyPressed() {
+  if (key === 'S' || key === 's') {
+    saveCanvas('grid_text', 'png')
+  }
 }
