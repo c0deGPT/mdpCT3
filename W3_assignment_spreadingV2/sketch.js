@@ -1,13 +1,15 @@
 let grid
 let next
 
+let img
+
 let dA = 1
 let dB = 0.5
-let feed = 0.055
-let k =0.062
+let feed = 0.062
+let k =0.061
 
 function setup() {
-  createCanvas(400, 400)
+  createCanvas(600, 600)
   pixelDensity(1)
   grid = []
   next = []
@@ -20,9 +22,14 @@ function setup() {
     }
   }
   
-  for (let i = 90; i < 110; i++){
-    for (let j = 90; j < 110; j++){
-      grid[i][j].b = 1
+  for (let n = 0; n < 20; n++) {
+    let size = 30
+    let randomX = floor(random(0 + size, width - size))
+    let randomY = floor(random(0 + size, height - size))
+    for (let i = randomX; i < randomX + size; i++){
+      for (let j = randomY; j < randomY + size; j++){
+        grid[i][j].b = 1
+      }
     }
   }
 }
