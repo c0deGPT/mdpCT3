@@ -1,7 +1,8 @@
 let grid
 let next
 
-let img
+let mask = []
+let maskImage
 
 let dA = 1
 let dB = 0.5
@@ -11,34 +12,52 @@ let k =0.061
 function setup() {
   createCanvas(600, 600)
   pixelDensity(1)
-  grid = []
-  next = []
-  for(let x = 0; x < width; x++){
-    grid[x] = []
-    next[x] = []
-    for(let y = 0; y < height; y++){
-      grid[x][y] = {a: 1, b: 0}
-      next[x][y] = {a: 1, b: 0}
-    }
-  }
-  
-  for (let n = 0; n < 20; n++) {
-    let size = 30
-    let randomX = floor(random(0 + size, width - size))
-    let randomY = floor(random(0 + size, height - size))
-    for (let i = randomX; i < randomX + size; i++){
-      for (let j = randomY; j < randomY + size; j++){
-        grid[i][j].b = 1
-      }
-    }
+
+  textSize(16)
+  textAlign(CENTER, CENTER)
+  text("Drop your image here", width/2, height/2)
+
+  let dropZone = select('canvas')
+  dropZone.dragOver(() => background(150))
+  dropZone.drop(handleFile)
+}
+
+function handleFile(file) {
+  if (file.type === 'image') {
+    maskImage = loadImage(file.data, () => {
+      console.log("Image loaded successfully.")
+      
+      let maxSize = 800
+      let scale = min(maxSize / maskImage.width, maxSize / maskImage.height)
+      let newWidth = floor(maskImage.width * scale)
+      let newHeight = floor(maskImage.height * scale)
+      
+      maskImage.resize(newWidth, newHeight)
+      resizeCanvas(maskImage.width, maskImage.height)
+
+      // if (maskImage.width >= maskImage.height){
+      //   maskImage.resize(width, 0)
+      // } else {
+      //   maskImage.resize(0, height)
+      // }
+      createMask()
+      genGrid()
+    })
   }
 }
 
 function draw() {
+  if (!maskImage || !grid || grid.length === 0) {
+    return
+  }
+
   background(51)
-  
   for(let x = 1; x < width - 1; x++){
     for(let y = 1; y < height - 1; y++){
+      if(mask[x][y]) {
+        continue
+      }
+
       let a = grid[x][y].a
       let b = grid[x][y].b
       next[x][y].a = a + (dA * laplaceA(x, y)) - (a * b * b) + (feed * (1-a))
@@ -53,6 +72,15 @@ function draw() {
   for(let x = 0; x < width; x++){
     for(let y = 0; y < height; y++){
       let pix = (x + y * width) * 4
+
+      if(mask[x][y]) {
+        //let imgPix = (x + y * width) * 4
+        pixels[pix + 0] = maskImage.pixels[pix + 0]
+        pixels[pix + 1] = maskImage.pixels[pix + 1]
+        pixels[pix + 2] = maskImage.pixels[pix + 2]
+        pixels[pix + 3] = 255
+      } else {
+        
       let a = next[x][y].a
       let b = next[x][y].b
       let c = floor((a-b) * 255)
@@ -60,12 +88,13 @@ function draw() {
       pixels[pix + 1] = c
       pixels[pix + 2] = c
       pixels[pix + 3] = 255
+      }
     }
   }
+
   updatePixels()
   swap()
 }
-
 
 function laplaceA(x, y){
   let sumA = 0
@@ -97,9 +126,49 @@ function laplaceB(x,y){
   return sumB
 }
 
-
 function swap(){
   let temp = grid
   grid = next
   next = temp
+}
+
+function createMask() {
+  maskImage.loadPixels()
+  mask = []
+  for(let x = 0; x < width; x++){
+    mask[x] = []
+    for(let y = 0; y < height; y++){
+      let pix = (x + y * width) * 4
+      let r = maskImage.pixels[pix + 0]
+      let g = maskImage.pixels[pix + 1]
+      let b = maskImage.pixels[pix + 2]
+      let brightness = (r + g + b) / 3
+
+      mask[x][y] = brightness < 75
+    }
+  }
+}
+
+function genGrid(){
+  grid = []
+  next = []
+  for(let x = 0; x < width; x++){
+    grid[x] = []
+    next[x] = []
+    for(let y = 0; y < height; y++){
+      grid[x][y] = {a: 1, b: 0}
+      next[x][y] = {a: 1, b: 0}
+    }
+  }
+  
+  for (let n = 0; n < 20; n++) {
+    let size = 30
+    let randomX = floor(random(0 + size, width - size))
+    let randomY = floor(random(0 + size, height - size))
+    for (let i = randomX; i < randomX + size; i++){
+      for (let j = randomY; j < randomY + size; j++){
+        grid[i][j].b = 1
+      }
+    }
+  }
 }
