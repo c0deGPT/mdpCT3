@@ -5,7 +5,7 @@ let contrastValue = 1.0
 
 let img
 let buffer
-let asciiCanvas
+let asciiCanvas, maskCanvas
 
 function setup() {
   createCanvas(600, 850)
