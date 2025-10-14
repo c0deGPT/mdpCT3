@@ -1,8 +1,15 @@
 html, body {
+  background: #d5d5d5;
   margin: 0;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 canvas {
   display: block;
+  width: 600px !important;
+  height: 600px !important;
 }
