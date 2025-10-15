@@ -165,9 +165,12 @@ function genGrid(){
     let size = 30
     let randomX = floor(random(0 + size, width - size))
     let randomY = floor(random(0 + size, height - size))
-    for (let i = randomX; i < randomX + size; i++){
-      for (let j = randomY; j < randomY + size; j++){
-        grid[i][j].b = 1
+
+    if(!mask[randomX][randomY]) {
+      for (let i = randomX; i < randomX + size; i++){
+        for (let j = randomY; j < randomY + size; j++){
+            grid[i][j].b = 1
+        }
       }
     }
   }
