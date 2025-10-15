@@ -13,7 +13,7 @@ function setup() {
   createCanvas(600, 600)
   pixelDensity(1)
 
-  textSize(16)
+  textSize(18)
   textAlign(CENTER, CENTER)
   text("Drop your image here", width/2, height/2)
 
@@ -81,13 +81,22 @@ function draw() {
         pixels[pix + 3] = 255
       } else {
         
-      let a = next[x][y].a
-      let b = next[x][y].b
-      let c = floor((a-b) * 255)
-      pixels[pix + 0] = c
-      pixels[pix + 1] = c
-      pixels[pix + 2] = c
-      pixels[pix + 3] = 255
+        let a = next[x][y].a
+        let b = next[x][y].b
+        let c = floor((a-b) * 255)
+        let bgBrightness = 255
+    
+        if(c < 200) {
+          pixels[pix + 0] = 255 - c
+          pixels[pix + 1] = 0
+          pixels[pix + 2] = 0
+          pixels[pix + 3] = 255
+        } else {
+          pixels[pix + 0] = bgBrightness
+          pixels[pix + 1] = bgBrightness
+          pixels[pix + 2] = bgBrightness
+          pixels[pix + 3] = 255
+        }
       }
     }
   }
@@ -144,7 +153,7 @@ function createMask() {
       let b = maskImage.pixels[pix + 2]
       let brightness = (r + g + b) / 3
 
-      mask[x][y] = brightness < 75
+      mask[x][y] = brightness < 100
     }
   }
 }
@@ -162,14 +171,20 @@ function genGrid(){
   }
   
   for (let n = 0; n < 20; n++) {
-    let size = 30
-    let randomX = floor(random(0 + size, width - size))
-    let randomY = floor(random(0 + size, height - size))
+    let radius = 15
+    let randomX = floor(random(0 + radius, width - radius))
+    let randomY = floor(random(0 + radius, height - radius))
 
     if(!mask[randomX][randomY]) {
-      for (let i = randomX; i < randomX + size; i++){
-        for (let j = randomY; j < randomY + size; j++){
+      for (let i = randomX - radius; i <= randomX + radius; i++){
+        for (let j = randomY - radius; j <= randomY + radius; j++){
+          let dx = i - randomX
+          let dy = j - randomY
+          let distance = sqrt(dx * dx + dy * dy)
+
+          if(distance <= radius && i >= 0 && i < width && j >= 0 && j < height && !mask[i][j]) {
             grid[i][j].b = 1
+          } 
         }
       }
     }
