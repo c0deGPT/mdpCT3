@@ -6,8 +6,8 @@ let maskImage
 
 let dA = 1
 let dB = 0.5
-let feed = 0.062
-let k =0.061
+let feed = 0.057
+let k =0.053
 
 function setup() {
   createCanvas(600, 600)
@@ -84,10 +84,10 @@ function draw() {
         let a = next[x][y].a
         let b = next[x][y].b
         let c = floor((a-b) * 255)
-        let bgBrightness = 255
+        let bgBrightness = 230
     
         if(c < 200) {
-          pixels[pix + 0] = 255 - c
+          pixels[pix + 0] = 200 - c
           pixels[pix + 1] = 0
           pixels[pix + 2] = 0
           pixels[pix + 3] = 255
@@ -170,8 +170,8 @@ function genGrid(){
     }
   }
   
-  for (let n = 0; n < 20; n++) {
-    let radius = 15
+  for (let n = 0; n < 80; n++) {
+    let radius = 10
     let randomX = floor(random(0 + radius, width - radius))
     let randomY = floor(random(0 + radius, height - radius))
 
