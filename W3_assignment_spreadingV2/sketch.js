@@ -9,6 +9,9 @@ let dB = 0.5
 let feed = 0.057
 let k =0.053
 
+let gridInterval
+let genNum
+
 function setup() {
   createCanvas(600, 600)
   pixelDensity(1)
@@ -42,7 +45,50 @@ function handleFile(file) {
       // }
       createMask()
       genGrid()
+      startGridGeneration()
     })
+  }
+}
+
+function startGridGeneration() {
+  if (gridInterval) {
+    clearInterval(gridInterval)
+  }
+  
+  gridInterval = setInterval(() => {
+    genNum = floor(random(1, 5))
+
+    for (let i = 0; i < genNum; i++) {
+      generateSingleGrid()
+    }
+  }, 1000)
+}
+
+function generateSingleGrid() {
+  let radius = 10
+  let attempts = 0
+  let maxAttempts = 50
+  
+  while (attempts < maxAttempts) {
+    let randomX = floor(random(0 + radius, width - radius))
+    let randomY = floor(random(0 + radius, height - radius))
+    
+    if (!mask[randomX][randomY]) {
+      for (let i = randomX - radius; i <= randomX + radius; i++) {
+        for (let j = randomY - radius; j <= randomY + radius; j++) {
+          let dx = i - randomX
+          let dy = j - randomY
+          let distance = sqrt(dx * dx + dy * dy)
+          
+          if (distance <= radius && i >= 0 && i < width && j >= 0 && j < height && !mask[i][j]) {
+            grid[i][j].b = 1
+          }
+        }
+      }
+      console.log("Generated grid at:", randomX, randomY)
+      break
+    }
+    attempts++
   }
 }
 
@@ -170,23 +216,23 @@ function genGrid(){
     }
   }
   
-  for (let n = 0; n < 80; n++) {
-    let radius = 10
-    let randomX = floor(random(0 + radius, width - radius))
-    let randomY = floor(random(0 + radius, height - radius))
+  // for (let n = 0; n < 80; n++) {
+  //   let radius = 10
+  //   let randomX = floor(random(0 + radius, width - radius))
+  //   let randomY = floor(random(0 + radius, height - radius))
 
-    if(!mask[randomX][randomY]) {
-      for (let i = randomX - radius; i <= randomX + radius; i++){
-        for (let j = randomY - radius; j <= randomY + radius; j++){
-          let dx = i - randomX
-          let dy = j - randomY
-          let distance = sqrt(dx * dx + dy * dy)
+  //   if(!mask[randomX][randomY]) {
+  //     for (let i = randomX - radius; i <= randomX + radius; i++){
+  //       for (let j = randomY - radius; j <= randomY + radius; j++){
+  //         let dx = i - randomX
+  //         let dy = j - randomY
+  //         let distance = sqrt(dx * dx + dy * dy)
 
-          if(distance <= radius && i >= 0 && i < width && j >= 0 && j < height && !mask[i][j]) {
-            grid[i][j].b = 1
-          } 
-        }
-      }
-    }
-  }
+  //         if(distance <= radius && i >= 0 && i < width && j >= 0 && j < height && !mask[i][j]) {
+  //           grid[i][j].b = 1
+  //         } 
+  //       }
+  //     }
+  //   }
+  // }
 }
