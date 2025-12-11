@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Documentation</title>
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <div class="desc">
+            <p class= "desc-text">The video effect</p>
+            <video controls>
+                <source src="processes/video1-1.mp4" type="video/mp4">
+            </video> 
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">1.This is the concept image. Our idea is like a queen bee and a worker bee: the queen bee sends out a “hungry” signal based on the ambient light level. When the worker bee receives this signal and detects food through the pressure sensor, the servo motor turns and delivers the food from the pressure sensor side to the queen bee. Once the servo reaches its end position, the LED light on the queen bee changes color.</p>
+            <img src="processes/image1-1.jpg" class="concept-img" alt="Qute Quokka 0">
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">2.This is the code on the Worker Bee side. At this stage, what it can do is detect the pressure input and then trigger the servo motor to start turning.</p>
+            <code>
+                <pre>
+                    #include <ESP32Servo.h>
+
+                    Servo myServo;
+                    int pos = 0;
+                    int servoPin = 21;
+
+                    #define FSR_PIN A2
+                    int fsrReading;
+
+                    void setup() {
+                        pinMode(FSR_PIN, INPUT);
+
+                        Serial.begin(115200); 
+
+                        myServo.setPeriodHertz(50);
+                        myServo.attach(servoPin, 1000, 2000);
+                    }
+                    
+                    void loop() {
+                        fsrReading = analogRead(FSR_PIN);  
+                        Serial.println(fsrReading);
+                        
+                        //delay(500);
+
+                        //servo
+                        for(pos = 0; pos <= 180; pos++){
+                            myServo.write(pos);
+                            delay(10);
+                        }
+                        for(pos = 180; pos >= 0; pos--){
+                            myServo.write(pos);
+                            delay(10);
+                        }
+                    }
+                </pre>
+            </code>
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">3.Next, I need the servo’s rotation speed to correspond to the incoming pressure value — the higher the pressure, the faster it should rotate.</p>
+            <code>
+                <pre>
+                    #include <ESP32Servo.h>
+                    Servo myServo;
+                    int pos = 0;
+                    int servoPin = 21;
+
+                    #define FSR_PIN A2
+                    int fsrReading;
+                    int servoSpeed;
+
+                    void setup() {
+                        pinMode(FSR_PIN, INPUT);
+
+                        Serial.begin(115200); 
+
+                        myServo.setPeriodHertz(50);
+                        myServo.attach(servoPin, 1000, 2000);
+                    }
+                    
+                    void loop() {
+                        fsrReading = analogRead(FSR_PIN);  
+                        Serial.println(fsrReading);
+                        
+                        if(fsrReading < 50){
+                            Serial.println("no pressure detected");
+                            myServo.write(90);
+                            delay(500);
+                            return;
+                        }
+                        if(fsrReading < 500){
+                            servoSpeed = 100;
+                            }
+                            else if(fsrReading < 1000){
+                            servoSpeed = 50;
+                            }
+                            else if(fsrReading < 2000){
+                            servoSpeed = 30;
+                            }
+                            else if(fsrReading < 3000){
+                            servoSpeed = 15;
+                            }
+                            else {
+                            servoSpeed = 1;
+                            }
+
+                        //servo
+                        for(pos = 0; pos <= 180; pos++){
+                            myServo.write(pos);
+                            delay(servoSpeed);
+                        }
+                        for(pos = 180; pos >= 0; pos--){
+                            myServo.write(pos);
+                            delay(servoSpeed);
+                        }
+                    }
+                </pre>
+            </code>
+        </div>
+
+        <div class="desc">
+            <p class= "desc-text">4.I added the data-transfer code and simplified the part where the pressure value affects the motor speed.</p>
+            <code>
+                <pre>
+                    #include "config.h"
+                    #include <ESP32Servo.h>
+
+                    #define FSR_PIN A2
+
+                    Servo myServo;
+                    int pos = 0;
+                    int servoPin = 21;
+
+                    int fsrReading;
+                    int servoSpeed;
+
+                    int period = 2000;
+                    int currRemainder = 0;
+                    int prevRemainder = 0;
+
+                    AdafruitIO_Feed *fsrFeed = io.feed("pressure_sensor");
+                    AdafruitIO_Feed *otherfeed = io.feed("light", "JiayingS");
+
+                    bool other_value = false;
+                    bool fullyTransferred = false;
+
+                    void setup() {
+                        pinMode(FSR_PIN, INPUT);
+
+                        Serial.begin(115200); 
+                        while(! Serial);
+                        Serial.print("Connecting to Adafruit IO");
+                        io.connect();
+                        
+                        while(io.status() < AIO_CONNECTED) {
+                            Serial.print(".");
+                            delay(500);
+                        }
+                        Serial.println("");
+                        Serial.println("Connected");
+
+                        otherfeed->onMessage(handleMessage);
+
+                        myServo.setPeriodHertz(50);
+                        myServo.attach(servoPin, 1000, 2000);
+                    }
+                    
+                    void loop() {
+                        io.run();
+                        currRemainder = millis() % period;
+                        if(currRemainder < prevRemainder && fullyTransferred){
+                            fsrFeed->save(int(fullyTransferred));
+                            Serial.print("0/1: ");
+                            Serial.println(int(fullyTransferred));
+                            fullyTransferred = false;
+                        }
+                        prevRemainder = currRemainder;
+
+                        fsrReading = analogRead(FSR_PIN);  
+                        Serial.print("pressure: ");
+                        Serial.println(fsrReading);
+                        
+                        if(fsrReading < 50){
+                            myServo.write(0);
+                            delay(500);
+                            prevRemainder = currRemainder;
+                            return;
+                        }
+                        
+                        //servo
+                        servoSpeed = int(map(fsrReading, 0, 4095, 75, 1));
+                        if(other_value){
+                            for(pos = 0; pos <= 180; pos++){
+                            myServo.write(pos);
+                            delay(servoSpeed);
+                            }
+                            for(pos = 180; pos >= 0; pos--){
+                            myServo.write(pos);
+                            delay(servoSpeed);
+                            }
+                            fullyTransferred = true;
+                        }
+                    } 
+
+                    void handleMessage(AdafruitIO_Data *data){
+                        Serial.print("Received: ");
+                        Serial.println(data->value());
+
+                        if(data->toInt() > 205){
+                        other_value = true;
+                        }
+                        else {
+                        other_value = false;
+                        }
+                    }
+                </pre>
+            </code>
+        </div>
+    </main>
+</body>
+</html>
