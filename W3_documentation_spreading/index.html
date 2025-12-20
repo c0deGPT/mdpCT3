@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Shader Documentation</title>
+</head>
+<body>
+    <header>
+        <h1>Henry's Shader Documentation</h1>
+    </header>
+    
+    <main>
+        <div class="gallery-grid">
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader1.png" alt="Shader 0 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>Shader1</h3>
+                    <p class="desc-text">1. Learning the basics of shader theory: the differences between ShaderMaterial and RawShaderMaterial; the roles of fragment and vertex shaders; the scope and limitations of uniforms and attributes; and the differences and usage of vec2, vec3, and vec4. The outcome was a solid-colored sphere.</p>
+                    <a href="details/shader1.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+            
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader2.png" alt="Shader 1 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>Shader2</h3>
+                    <p class="desc-text">2. Using varyings to enable communication between the vertex and fragment shaders. The result was a draggable sphere with a gradient color.</p>
+                    <a href="details/shader2.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader3.png" alt="Shader 2 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader3</h3>
+                    <p class="desc-text">3. Replacing the sphere with a plane and using vUv instead of vPosition to avoid negative values, with components accessed via vUv.xxx. The result was a plane with a horizontal black-and-white gradient.</p>
+                    <a href="details/shader3.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader4.png" alt="Shader 3 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader4</h3>
+                    <p class="desc-text">4. Creating stepped gradients using interpolation with mix.</p>
+                    <a href="details/shader4.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader5.png" alt="Shader 4 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader5</h3>
+                    <p class="desc-text">5. Using smoothstep to create a smooth step transition.</p>
+                    <a href="details/shader5.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader6.png" alt="Shader 5 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader6</h3>
+                    <p class="desc-text">6. Shifting the UV center and using the length function to generate a circular gradient.</p>
+                    <a href="details/shader6.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader7.png" alt="Shader 6 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader7</h3>
+                    <p class="desc-text">7. Using fract to exploit the decimal part of values to create a wavy effect.</p>
+                    <a href="details/shader7.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader8.png" alt="Shader 7 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader8</h3>
+                    <p class="desc-text">8. Combining step and fract functions to create a high-contrast wavy plane.</p>
+                    <a href="details/shader8.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                     <video controls muted loop poster="shader9.mp4">
+                        <source src="processes/shader9.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="card-content">
+                    <h3>shader9</h3>
+                    <p class="desc-text">9. Creating a Fresnel-like effect by subtracting the current point’s position from the camera position and applying the dot function.</p>
+                    <a href="details/shader9.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader10.png" alt="Shader 9 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader10</h3>
+                    <p class="desc-text">10. Creating a rectangle with a gradient.</p>
+                    <a href="details/shader10.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader11.png" alt="Shader 10 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader11</h3>
+                    <p class="desc-text">11. Adding a Perlin noise effect to the plane.</p>
+                    <a href="details/shader11.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                    <img src="processes/shader12.png" alt="Shader 11 Preview">
+                </div>
+                <div class="card-content">
+                    <h3>shader12</h3>
+                    <p class="desc-text">12. Attempting to use an image as a texture and applying it with a finalColor effect.</p>
+                    <a href="details/shader12.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                     <video controls muted loop poster="shader13.mp4">
+                        <source src="processes/shader13.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="card-content">
+                    <h3>shader13</h3>
+                    <p class="desc-text">13. Creating a shader effect with a dynamic ring-shaped wave.</p>
+                    <a href="details/shader13.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                     <video controls muted loop poster="shader14.mp4">
+                        <source src="processes/shader14.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="card-content">
+                    <h3>shader14</h3>
+                    <p class="desc-text">14. Modifying the waves by applying 3D Perlin noise to create a noise-styled wave shader.</p>
+                    <a href="details/shader14.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+            <div class="shader-card">
+                <div class="media-container">
+                     <video controls muted loop poster="shader15.mp4">
+                        <source src="processes/shader15.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="card-content">
+                    <h3>shader15</h3>
+                    <p class="desc-text">15. Moving coords, Perlin noise, and smoothMod from the fragment shader to the vertex shader, aiming to elevate each vertex to a different height.</p>
+                    <a href="details/shader15.html" class="btn-details">View code &rarr;</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>

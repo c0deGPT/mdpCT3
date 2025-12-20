@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../style.css">
+    <title>Shader Codes</title>
+</head>
+<body class="detail-page">
+    <nav class="top-nav">
+        <a href="../index.html" class="back-link">&larr; Back to Gallery</a>
+    </nav>
+
+    <main class="detail-container">
+        <div class="detail-content">
+            <h1>Shader5</h1>
+            <div class="code-section">
+                <h3>app.js</h3>
+                <pre><code>
+                </code></pre>
+
+                <h3>fragment.glsl</h3>
+                <pre><code>
+uniform float uTime;
+
+varying vec3 vPosition;
+varying vec3 vNormal;
+varying vec2 vUv;
+
+void main() {
+	gl_FragColor = vec4(vec3(smoothstep(0.45, 0.7, vUv.x)), 1);
+}
+                </code></pre>
+
+                <h3>vertex.glsl</h3>
+                <pre><code>
+                </code></pre>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>
