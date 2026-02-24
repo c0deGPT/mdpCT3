@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pareidolia Showcase</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 80px 40px;
+            background-color: #FDFFFC; 
+            color: #333333;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        .media-gallery {
+            columns: 320px; 
+            column-gap: 60px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .media-item {
+            break-inside: avoid; 
+            margin-bottom: 80px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px; 
+            transition: transform 0.3s ease;
+        }
+
+        .media-item:nth-child(2n) {
+            transform: translateY(40px);
+        }
+        
+        .media-item:nth-child(3n) {
+            transform: translateY(-20px);
+        }
+        
+        .media-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            z-index: 10;
+        }
+
+        .media-wrapper {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: auto; 
+            display: block;
+        }
+
+        img {
+            width: 60%; 
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .media-title {
+            text-align: center;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 500; 
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="media-gallery">
+        <div class="media-item">
+            <div class="media-wrapper">
+                <video src="video/cone1.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="media-title">cone 1</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <img src="img/charging port.png" alt="charging port">
+            </div>
+            <div class="media-title">charging port</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <video src="video/ice1.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="media-title">ice 1</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <video src="video/cone2.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="media-title">cone 2</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <img src="img/hat.png" alt="hat">
+            </div>
+            <div class="media-title">hat</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <video src="video/ice2.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="media-title">ice 2</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <img src="img/cone.png" alt="cone">
+            </div>
+            <div class="media-title">cone</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <video src="video/cone3.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="media-title">cone 3</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <img src="img/ice.png" alt="ice">
+            </div>
+            <div class="media-title">ice</div>
+        </div>
+
+        <div class="media-item">
+            <div class="media-wrapper">
+                <video src="video/ice3.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="media-title">ice 3</div>
+        </div>
+    </div>
+
+</body>
+</html>
