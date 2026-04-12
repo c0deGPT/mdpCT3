@@ -1,0 +1,222 @@
+:root {
+  --bg: #050505;
+  --panel: rgba(245, 245, 238, 0.94);
+  --panel-text: #0c0c0c;
+  --soft: rgba(255, 255, 255, 0.12);
+  --line: rgba(255, 255, 255, 0.08);
+  --grid: rgba(255, 255, 255, 0.055);
+  --accent: #d7d4cb;
+  --highlight: #f0efea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--bg);
+  color: #f3f1ea;
+  font-family: "IBM Plex Mono", "Space Mono", "Courier New", monospace;
+}
+
+body {
+  position: relative;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.04), transparent 24%),
+    radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.03), transparent 28%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: auto, auto, auto, 18px 18px, 18px 18px;
+  background-position: center, center, center, center, center;
+}
+
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.6px, transparent 0.7px);
+  background-size: 5px 5px;
+  mix-blend-mode: soft-light;
+  opacity: 0.18;
+}
+
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  background: var(--panel);
+  color: var(--panel-text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  line-height: 1;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+
+.label strong {
+  font-weight: 700;
+}
+
+.label small {
+  font-size: 0.62rem;
+  opacity: 0.78;
+}
+
+.label.top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.arc {
+  position: absolute;
+  right: -14vw;
+  top: 10vh;
+  width: 55vw;
+  height: 55vw;
+  min-width: 380px;
+  min-height: 380px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  opacity: 0.32;
+  filter: blur(0.2px);
+}
+
+.arc.arc-two {
+  right: 18vw;
+  top: 58vh;
+  width: 38vw;
+  height: 38vw;
+  opacity: 0.16;
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: visible;
+  isolation: isolate;
+  cursor: default;
+}
+
+.cloud {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  min-height: 100%;
+  z-index: 10;
+}
+
+.figure-cluster {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.figure-image {
+  position: absolute;
+  height: auto;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: var(--figure-opacity, 0.9);
+  transform: translate(-50%, -50%);
+}
+
+.tile {
+  position: absolute;
+  margin: 0;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+  transition:
+    transform 200ms ease,
+    filter 220ms ease,
+    box-shadow 220ms ease,
+    opacity 420ms ease;
+  filter: grayscale(0.08) contrast(1.06) brightness(0.94);
+  transform: rotate(var(--tile-rotation, 0deg));
+  opacity: 1;
+}
+
+.tile.is-pending {
+  opacity: 0;
+}
+
+.tile img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 10px 30px rgba(0, 0, 0, 0.38);
+  background: rgba(255, 255, 255, 0.02);
+  pointer-events: none;
+}
+
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 1px solid transparent;
+  transition: border-color 220ms ease;
+}
+
+.tile:hover,
+.tile:focus-visible {
+  filter: grayscale(0) contrast(1.1) brightness(1);
+  transform: rotate(var(--tile-rotation, 0deg)) scale(1.02);
+}
+
+.tile:hover::after,
+.tile:focus-visible::after,
+.tile.is-active::after {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.tile.is-dragging {
+  cursor: grabbing;
+  transition: none;
+  filter: grayscale(0) contrast(1.12) brightness(1.02);
+}
+
+.tile.featured img {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 18px 45px rgba(0, 0, 0, 0.48);
+}
+
+@media (max-width: 900px) {
+}
+
+@media (max-width: 720px) {
+  .label {
+    font-size: 0.64rem;
+  }
+
+  .arc {
+    opacity: 0.18;
+  }
+}
