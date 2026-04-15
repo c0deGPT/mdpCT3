@@ -7,18 +7,38 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <div class="hud" aria-hidden="true">
+  <div class="hud">
     <div class="label top-left">
       <strong>Pareidolia Atlas</strong>
       <small>fragment field</small>
     </div>
+    <button class="label nav-toggle" id="pageToggle" type="button" aria-label="Go to page 2">
+      <strong id="pageToggleArrow" aria-hidden="true">→</strong>
+    </button>
     <div class="arc"></div>
     <div class="arc arc-two"></div>
   </div>
 
   <main class="stage" id="stage">
-    <div class="figure-cluster" id="figureCluster" aria-hidden="true"></div>
-    <div class="cloud" id="cloud"></div>
+    <section class="page-scene is-active" id="scene0" data-page="0" aria-label="Pareidolia plan one">
+      <div class="scene-backdrop">
+        <div class="screen-frame">
+          <img src="./board-1.png" alt="First plan drawing" />
+        </div>
+      </div>
+      <div class="figure-cluster" id="figureCluster0" aria-hidden="true"></div>
+      <div class="cloud" id="cloud0"></div>
+    </section>
+
+    <section class="page-scene" id="scene1" data-page="1" aria-label="Pareidolia plan two">
+      <div class="scene-backdrop">
+        <div class="screen-frame">
+          <img src="./board-2.png" alt="Second plan drawing" />
+        </div>
+      </div>
+      <div class="figure-cluster" id="figureCluster1" aria-hidden="true"></div>
+      <div class="cloud" id="cloud1"></div>
+    </section>
   </main>
 
   <script src="./image-manifest.js"></script>

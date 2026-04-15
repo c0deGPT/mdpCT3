@@ -1,11 +1,17 @@
-const imageFiles = Array.isArray(window.IMAGE_FILES) ? window.IMAGE_FILES : [];
+const sourceImageFiles = Array.isArray(window.IMAGE_FILES) ? window.IMAGE_FILES : [];
+const imageFiles = sourceImageFiles.filter((_, index) => index % 4 === 0);
+const pageImageGroups = [[], []];
 
-const INITIAL_BATCH_SIZE = 24;
-const TARGET_REVEAL_DURATION_MS = 4800;
-const MIN_REMAINING_BATCH_SIZE = 20;
-const MAX_REMAINING_BATCHES = 14;
+imageFiles.forEach((file, index) => {
+  pageImageGroups[index % 2].push(file);
+});
+
+const INITIAL_BATCH_SIZE = 14;
+const TARGET_REVEAL_DURATION_MS = 2600;
+const MIN_REMAINING_BATCH_SIZE = 10;
+const MAX_REMAINING_BATCHES = 8;
 const MIN_BATCH_DELAY_MS = 70;
-const FIGURE_COUNT = 15;
+const FIGURE_COUNT = 6;
 const FIGURE_FILE = "1926277-200.png";
 const SESSION_SEED = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const IMAGE_BASE_PATHS = buildAssetBases(
@@ -34,12 +40,30 @@ const FIGURE_BASE_PATHS = buildAssetBases(
 );
 
 const stage = document.getElementById("stage");
-const cloud = document.getElementById("cloud");
-const figureCluster = document.getElementById("figureCluster");
+const pageToggle = document.getElementById("pageToggle");
+const pageToggleArrow = document.getElementById("pageToggleArrow");
+const scenes = [
+  {
+    index: 0,
+    root: document.getElementById("scene0"),
+    cloud: document.getElementById("cloud0"),
+    figureCluster: document.getElementById("figureCluster0"),
+    files: pageImageGroups[0]
+  },
+  {
+    index: 1,
+    root: document.getElementById("scene1"),
+    cloud: document.getElementById("cloud1"),
+    figureCluster: document.getElementById("figureCluster1"),
+    files: pageImageGroups[1]
+  }
+];
+
 let renderToken = 0;
 let resizeTimer = null;
 let activeImageBase = IMAGE_BASE_PATHS[0] || ".";
 let activeFigureBase = FIGURE_BASE_PATHS[0] || ".";
+let currentPageIndex = 0;
 
 function normalizeBasePath(basePath) {
   if (!basePath || basePath === ".") {
@@ -145,8 +169,8 @@ function attachSrcFallback(img, file, bases, preferredBase, onResolved) {
 
 function hashString(input) {
   let hash = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    hash ^= input.charCodeAt(i);
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
     hash = Math.imul(hash, 16777619);
   }
   return hash >>> 0;
@@ -222,49 +246,52 @@ function createRevealOrder(total, initialBatchSize = INITIAL_BATCH_SIZE) {
   return order;
 }
 
-function getLayoutConfig(revealPlan) {
+function getLayoutConfig(scene, revealPlan) {
   const stageWidth = stage.clientWidth;
   const viewportHeight = window.innerHeight;
-  const gutter = clamp(stageWidth * 0.012, 12, 22);
-  const sceneHeight = Math.max(viewportHeight * 3.5, imageFiles.length * 31);
-
-  stage.style.minHeight = `${Math.ceil(sceneHeight)}px`;
-  cloud.style.minHeight = `${Math.ceil(sceneHeight)}px`;
+  const gutter = clamp(stageWidth * 0.012, 12, 24);
 
   return {
     stageWidth,
     viewportHeight,
     gutter,
-    sceneHeight,
-    revealOrder: createRevealOrder(imageFiles.length, revealPlan.initialBatchSize),
+    sceneHeight: viewportHeight,
+    revealOrder: createRevealOrder(scene.files.length, revealPlan.initialBatchSize),
     placedRects: [],
     reservedRects: [
       {
-        x: stageWidth * 0.5 - Math.max(48, stageWidth * 0.09),
-        y: Math.max(28, viewportHeight * 0.12),
-        width: Math.max(96, stageWidth * 0.18),
-        height: Math.max(180, viewportHeight * 0.58)
+        x: 0,
+        y: 0,
+        width: Math.max(200, stageWidth * 0.28),
+        height: Math.max(72, viewportHeight * 0.12)
+      },
+      {
+        x: stageWidth - Math.max(86, stageWidth * 0.12),
+        y: 0,
+        width: Math.max(86, stageWidth * 0.12),
+        height: Math.max(72, viewportHeight * 0.12)
       }
-    ]
+    ],
+    scene
   };
 }
 
-function buildFigures(layout) {
-  figureCluster.innerHTML = "";
-  const minY = Math.max(48, layout.viewportHeight * 0.08);
-  const maxY = Math.max(minY + 120, layout.sceneHeight - layout.viewportHeight * 0.12);
+function buildFigures(scene, layout) {
+  scene.figureCluster.innerHTML = "";
+  const minY = Math.max(72, layout.viewportHeight * 0.14);
+  const maxY = Math.max(minY + 120, layout.viewportHeight - 42);
   const figureSrc = joinAssetPath(activeFigureBase, FIGURE_FILE);
 
   for (let index = 0; index < FIGURE_COUNT; index += 1) {
-    const random = createSeededRandom(hashString(`${SESSION_SEED}-figure-${index}`));
+    const random = createSeededRandom(hashString(`${SESSION_SEED}-page-${scene.index}-figure-${index}`));
     const progress = index / Math.max(1, FIGURE_COUNT - 1);
-    const xBand = random() > 0.5 ? [0.1, 0.42] : [0.58, 0.9];
+    const xBand = random() > 0.5 ? [0.06, 0.22] : [0.78, 0.94];
     const x = layout.stageWidth * (xBand[0] + random() * (xBand[1] - xBand[0]));
-    const y = minY + progress * (maxY - minY) + (random() - 0.5) * layout.viewportHeight * 0.14;
+    const y = minY + progress * (maxY - minY) + (random() - 0.5) * layout.viewportHeight * 0.16;
     const width = layout.stageWidth < 720
-      ? 20 + random() * 16
-      : 24 + random() * 20;
-    const opacity = 0.72 + random() * 0.18;
+      ? 10 + random() * 6
+      : 12 + random() * 8;
+    const opacity = 0.36 + random() * 0.12;
 
     const figure = document.createElement("img");
     figure.className = "figure-image";
@@ -277,23 +304,23 @@ function buildFigures(layout) {
     attachSrcFallback(figure, FIGURE_FILE, FIGURE_BASE_PATHS, activeFigureBase, (resolvedBase) => {
       activeFigureBase = normalizeBasePath(resolvedBase);
     });
-    figureCluster.appendChild(figure);
+    scene.figureCluster.appendChild(figure);
   }
 }
 
 function computeScale(naturalW, naturalH, stageWidth) {
-  const baseScale = clamp(stageWidth / 1600, 0.24, 0.48);
+  const baseScale = clamp(stageWidth / 1900, 0.18, 0.3);
   const area = naturalW * naturalH;
   let adjusted = baseScale;
-  if (area > 180000) {
-    adjusted *= 0.8;
-  } else if (area < 38000) {
+  if (area > 65000) {
+    adjusted *= 0.86;
+  } else if (area < 18000) {
     adjusted *= 1.12;
   }
-  return adjusted * 1.05;
+  return adjusted * 1.4;
 }
 
-function rectsOverlap(a, b, gap = 14) {
+function rectsOverlap(a, b, gap = 8) {
   return !(
     a.x + a.width + gap <= b.x ||
     b.x + b.width + gap <= a.x ||
@@ -304,28 +331,29 @@ function rectsOverlap(a, b, gap = 14) {
 
 function collides(rect, layout) {
   for (const reserved of layout.reservedRects) {
-    if (rectsOverlap(rect, reserved, 18)) {
+    if (rectsOverlap(rect, reserved, 14)) {
       return true;
     }
   }
   for (const placed of layout.placedRects) {
-    if (rectsOverlap(rect, placed, 8)) {
+    if (rectsOverlap(rect, placed, 4)) {
       return true;
     }
   }
   return false;
 }
 
-function choosePosition(width, height, index, file, layout) {
-  const random = createSeededRandom(hashString(`${SESSION_SEED}-${file}`));
+function choosePosition(width, height, file, layout, sceneIndex) {
+  const random = createSeededRandom(hashString(`${SESSION_SEED}-page-${sceneIndex}-${file}`));
   const maxX = Math.max(layout.gutter, layout.stageWidth - width - layout.gutter);
   const maxY = Math.max(layout.gutter, layout.sceneHeight - height - layout.gutter);
+  const topLimit = Math.max(layout.gutter + 64, layout.viewportHeight * 0.12);
   const anchorY = clamp(
-    layout.gutter + random() * (layout.sceneHeight - height - layout.gutter * 2),
-    layout.gutter,
+    topLimit + random() * Math.max(24, layout.sceneHeight - height - topLimit - layout.gutter),
+    topLimit,
     maxY
   );
-  const band = Math.max(layout.viewportHeight * 0.28, 220);
+  const band = Math.max(layout.viewportHeight * 0.24, 180);
 
   for (let attempt = 0; attempt < 160; attempt += 1) {
     const x = clamp(
@@ -336,9 +364,13 @@ function choosePosition(width, height, index, file, layout) {
 
     let y;
     if (attempt < 110) {
-      y = clamp(anchorY + (random() - 0.5) * band * 1.6, layout.gutter, maxY);
+      y = clamp(anchorY + (random() - 0.5) * band * 1.6, topLimit, maxY);
     } else {
-      y = clamp(layout.gutter + random() * (layout.sceneHeight - height - layout.gutter * 2), layout.gutter, maxY);
+      y = clamp(
+        topLimit + random() * Math.max(24, layout.sceneHeight - height - topLimit - layout.gutter),
+        topLimit,
+        maxY
+      );
     }
 
     const rect = { x, y, width, height };
@@ -347,30 +379,20 @@ function choosePosition(width, height, index, file, layout) {
     }
   }
 
-  const currentBottom = layout.placedRects.length
-    ? Math.max(...layout.placedRects.map((rect) => rect.y + rect.height))
-    : layout.gutter;
-  const fallbackRect = {
-    x: clamp(
-      layout.gutter + random() * (layout.stageWidth - width - layout.gutter * 2),
-      layout.gutter,
-      maxX
-    ),
-    y: currentBottom + layout.gutter * (1.5 + random()),
-    width,
-    height
+  return {
+    rect: {
+      x: clamp(layout.stageWidth * 0.5 - width * 0.5, layout.gutter, maxX),
+      y: clamp(layout.sceneHeight * 0.5 - height * 0.5, topLimit, maxY),
+      width,
+      height
+    },
+    rotation: (random() - 0.5) * 5.5
   };
-
-  layout.sceneHeight = Math.max(layout.sceneHeight, fallbackRect.y + height + layout.gutter * 3);
-  stage.style.minHeight = `${Math.ceil(layout.sceneHeight)}px`;
-  cloud.style.minHeight = `${Math.ceil(layout.sceneHeight)}px`;
-
-  return { rect: fallbackRect, rotation: (random() - 0.5) * 7.5 };
 }
 
-function beginDrag(event, tile) {
+function beginDrag(event, tile, sceneRoot) {
   const rect = tile.getBoundingClientRect();
-  const stageRect = stage.getBoundingClientRect();
+  const sceneRect = sceneRoot.getBoundingClientRect();
   const startOffsetX = event.clientX - rect.left;
   const startOffsetY = event.clientY - rect.top;
   tile.classList.add("is-dragging");
@@ -380,14 +402,14 @@ function beginDrag(event, tile) {
     const width = rect.width;
     const height = rect.height;
     const x = clamp(
-      moveEvent.clientX - stageRect.left - startOffsetX,
+      moveEvent.clientX - sceneRect.left - startOffsetX,
       8,
-      stageRect.width - width - 8
+      sceneRect.width - width - 8
     );
     const y = clamp(
-      moveEvent.clientY - stageRect.top - startOffsetY,
+      moveEvent.clientY - sceneRect.top - startOffsetY,
       8,
-      stage.offsetHeight - height - 8
+      sceneRect.height - height - 8
     );
     tile.style.left = `${x}px`;
     tile.style.top = `${y}px`;
@@ -406,20 +428,21 @@ function beginDrag(event, tile) {
   tile.addEventListener("pointercancel", end);
 }
 
-function createTile(meta, index, layout, eager = false) {
+function createTile(meta, index, layout, scene, eager = false) {
   const figure = document.createElement("figure");
   figure.className = "tile is-pending";
   figure.tabIndex = 0;
   figure.dataset.file = meta.file;
+  figure.dataset.page = `${scene.index}`;
 
-  if (index % 9 === 0 || index === 10) {
+  if (index % 8 === 0 || index === 5) {
     figure.classList.add("featured");
   }
 
   const scale = computeScale(meta.width, meta.height, layout.stageWidth);
   const width = meta.width * scale;
   const height = meta.height * scale;
-  const placement = choosePosition(width, height, index, meta.file, layout);
+  const placement = choosePosition(width, height, meta.file, layout, scene.index);
   layout.placedRects.push(placement.rect);
 
   figure.style.width = `${width}px`;
@@ -432,7 +455,7 @@ function createTile(meta, index, layout, eager = false) {
   img.alt = `Pareidolia fragment ${index + 1}`;
   img.loading = eager ? "eager" : "lazy";
   img.decoding = "async";
-  if (eager && index < 8) {
+  if (eager && index < 6) {
     img.fetchPriority = "high";
   }
   img.src = meta.src || joinAssetPath(activeImageBase, meta.file);
@@ -451,9 +474,9 @@ function createTile(meta, index, layout, eager = false) {
     { once: true }
   );
 
-  figure.addEventListener("pointerdown", (event) => beginDrag(event, figure));
+  figure.addEventListener("pointerdown", (event) => beginDrag(event, figure, scene.root));
   figure.addEventListener("click", () => {
-    document.querySelectorAll(".tile.is-active").forEach((node) => {
+    scene.root.querySelectorAll(".tile.is-active").forEach((node) => {
       node.classList.remove("is-active");
     });
     figure.classList.add("is-active");
@@ -462,7 +485,7 @@ function createTile(meta, index, layout, eager = false) {
   return figure;
 }
 
-async function appendBatch(startIndex, count, token, layout, eager = false) {
+async function appendBatch(startIndex, count, token, layout, scene, eager = false) {
   if (token !== renderToken) {
     return startIndex;
   }
@@ -471,7 +494,7 @@ async function appendBatch(startIndex, count, token, layout, eager = false) {
   const endIndex = Math.min(startIndex + count, revealOrder.length);
   const batchIndices = revealOrder.slice(startIndex, endIndex);
   const metas = await Promise.all(
-    batchIndices.map((imageIndex) => loadImageMeta(imageFiles[imageIndex]))
+    batchIndices.map((imageIndex) => loadImageMeta(scene.files[imageIndex]))
   );
 
   if (token !== renderToken) {
@@ -480,15 +503,15 @@ async function appendBatch(startIndex, count, token, layout, eager = false) {
 
   metas.forEach((meta, offset) => {
     const index = batchIndices[offset];
-    const tile = createTile(meta, index, layout, eager);
-    cloud.appendChild(tile);
+    const tile = createTile(meta, index, layout, scene, eager);
+    scene.cloud.appendChild(tile);
   });
 
   return endIndex;
 }
 
-function queueRemainingBatches(startIndex, token, layout, revealPlan) {
-  if (token !== renderToken || startIndex >= imageFiles.length) {
+function queueRemainingBatches(startIndex, token, layout, scene, revealPlan) {
+  if (token !== renderToken || startIndex >= scene.files.length) {
     return;
   }
 
@@ -497,8 +520,8 @@ function queueRemainingBatches(startIndex, token, layout, revealPlan) {
       if (token !== renderToken) {
         return;
       }
-      const nextIndex = await appendBatch(startIndex, revealPlan.batchSize, token, layout, false);
-      queueRemainingBatches(nextIndex, token, layout, revealPlan);
+      const nextIndex = await appendBatch(startIndex, revealPlan.batchSize, token, layout, scene, false);
+      queueRemainingBatches(nextIndex, token, layout, scene, revealPlan);
     }, revealPlan.batchDelayMs);
   };
 
@@ -509,17 +532,53 @@ function queueRemainingBatches(startIndex, token, layout, revealPlan) {
   }
 }
 
+function updateToggleUI() {
+  const nextPageIndex = currentPageIndex === 0 ? 1 : 0;
+  pageToggleArrow.textContent = currentPageIndex === 0 ? "\u2192" : "\u2190";
+  pageToggle.setAttribute("aria-label", `Go to page ${nextPageIndex + 1}`);
+}
+
+function setActivePage(index) {
+  currentPageIndex = index;
+  scenes.forEach((scene) => {
+    scene.root.classList.toggle("is-active", scene.index === currentPageIndex);
+  });
+  updateToggleUI();
+}
+
+function togglePage() {
+  setActivePage(currentPageIndex === 0 ? 1 : 0);
+}
+
 async function rebuildLayout() {
   renderToken += 1;
   const token = renderToken;
-  cloud.innerHTML = "";
 
-  const revealPlan = getRevealPlan(imageFiles.length);
-  const layout = getLayoutConfig(revealPlan);
-  buildFigures(layout);
-  const nextIndex = await appendBatch(0, revealPlan.initialBatchSize, token, layout, true);
-  queueRemainingBatches(nextIndex, token, layout, revealPlan);
+  scenes.forEach((scene) => {
+    scene.cloud.innerHTML = "";
+    scene.figureCluster.innerHTML = "";
+  });
+
+  const buildTasks = scenes.map(async (scene) => {
+    const revealPlan = getRevealPlan(scene.files.length);
+    const layout = getLayoutConfig(scene, revealPlan);
+    buildFigures(scene, layout);
+    const nextIndex = await appendBatch(0, revealPlan.initialBatchSize, token, layout, scene, true);
+    queueRemainingBatches(nextIndex, token, layout, scene, revealPlan);
+  });
+
+  await Promise.all(buildTasks);
 }
+
+pageToggle.addEventListener("click", togglePage);
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowRight" && currentPageIndex === 0) {
+    togglePage();
+  } else if (event.key === "ArrowLeft" && currentPageIndex === 1) {
+    togglePage();
+  }
+});
 
 window.addEventListener("resize", () => {
   window.clearTimeout(resizeTimer);
@@ -528,4 +587,5 @@ window.addEventListener("resize", () => {
   }, 180);
 });
 
+setActivePage(0);
 rebuildLayout();

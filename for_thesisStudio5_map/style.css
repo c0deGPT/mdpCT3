@@ -16,10 +16,9 @@
 html,
 body {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--bg);
   color: #f3f1ea;
   font-family: "IBM Plex Mono", "Space Mono", "Courier New", monospace;
@@ -39,7 +38,7 @@ body {
 
 body::after {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.6px, transparent 0.7px);
@@ -52,7 +51,7 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 40;
+  z-index: 50;
 }
 
 .label {
@@ -86,6 +85,30 @@ body::after {
   left: 12px;
 }
 
+.nav-toggle {
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  pointer-events: auto;
+  justify-content: center;
+  min-width: 3.2rem;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.nav-toggle:hover,
+.nav-toggle:focus-visible {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.nav-toggle strong {
+  font-size: 1.18rem;
+  line-height: 1;
+}
+
 .arc {
   position: absolute;
   right: -14vw;
@@ -113,26 +136,69 @@ body::after {
 .stage {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  overflow: visible;
+  height: 100vh;
+  overflow: hidden;
   isolation: isolate;
   cursor: default;
 }
 
+.page-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 280ms ease,
+    visibility 280ms ease;
+}
+
+.page-scene.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.scene-backdrop,
+.screen-frame {
+  position: absolute;
+  inset: 0;
+}
+
+.screen-frame img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  width: 80%;
+  height: 80%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  filter: saturate(0.94) contrast(1.02);
+  opacity: 0.5;
+}
+
+.scene-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.08), transparent 32%),
+    radial-gradient(circle at 76% 72%, rgba(255, 255, 255, 0.06), transparent 28%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.26));
+}
+
 .cloud {
   position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  min-height: 100%;
-  z-index: 10;
+  inset: 0;
+  z-index: 14;
 }
 
 .figure-cluster {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 4;
+  z-index: 12;
 }
 
 .figure-image {
@@ -158,6 +224,7 @@ body::after {
   filter: grayscale(0.08) contrast(1.06) brightness(0.94);
   transform: rotate(var(--tile-rotation, 0deg));
   opacity: 1;
+  z-index: 8;
 }
 
 .tile.is-pending {
@@ -209,6 +276,9 @@ body::after {
 }
 
 @media (max-width: 900px) {
+  .arc {
+    opacity: 0.2;
+  }
 }
 
 @media (max-width: 720px) {
