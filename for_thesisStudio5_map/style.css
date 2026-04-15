@@ -26,14 +26,7 @@ body {
 
 body {
   position: relative;
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05), transparent 30%),
-    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.04), transparent 24%),
-    radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.03), transparent 28%),
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: auto, auto, auto, 18px 18px, 18px 18px;
-  background-position: center, center, center, center, center;
+  background: #000000;
 }
 
 body::after {
@@ -41,10 +34,8 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.6px, transparent 0.7px);
-  background-size: 5px 5px;
-  mix-blend-mode: soft-light;
-  opacity: 0.18;
+  background: transparent;
+  opacity: 0;
 }
 
 .hud {
