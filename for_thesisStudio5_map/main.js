@@ -46,6 +46,7 @@ const scenes = [
   {
     index: 0,
     root: document.getElementById("scene0"),
+    connectionLayer: document.getElementById("connections0"),
     cloud: document.getElementById("cloud0"),
     figureCluster: document.getElementById("figureCluster0"),
     files: pageImageGroups[0]
@@ -53,6 +54,7 @@ const scenes = [
   {
     index: 1,
     root: document.getElementById("scene1"),
+    connectionLayer: document.getElementById("connections1"),
     cloud: document.getElementById("cloud1"),
     figureCluster: document.getElementById("figureCluster1"),
     files: pageImageGroups[1]
@@ -64,6 +66,7 @@ let resizeTimer = null;
 let activeImageBase = IMAGE_BASE_PATHS[0] || ".";
 let activeFigureBase = FIGURE_BASE_PATHS[0] || ".";
 let currentPageIndex = 0;
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 function normalizeBasePath(basePath) {
   if (!basePath || basePath === ".") {
@@ -191,6 +194,119 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function getNodeMetrics(node, sceneRect) {
+  const rect = node.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return null;
+  }
+
+  return {
+    x: rect.left - sceneRect.left,
+    y: rect.top - sceneRect.top,
+    width: rect.width,
+    height: rect.height,
+    centerX: rect.left - sceneRect.left + rect.width / 2,
+    centerY: rect.top - sceneRect.top + rect.height / 2
+  };
+}
+
+function getAnchorPoint(metrics, targetX) {
+  const useRightSide = targetX >= metrics.centerX;
+  return {
+    x: useRightSide ? metrics.x + metrics.width : metrics.x,
+    y: metrics.centerY
+  };
+}
+
+function pickConnectionFigure(tileMetrics, figureMetrics, seedKey) {
+  if (!figureMetrics.length) {
+    return null;
+  }
+
+  const rankedFigures = [...figureMetrics].sort((a, b) => {
+    const distanceA = Math.hypot(tileMetrics.centerX - a.centerX, tileMetrics.centerY - a.centerY);
+    const distanceB = Math.hypot(tileMetrics.centerX - b.centerX, tileMetrics.centerY - b.centerY);
+    return distanceA - distanceB;
+  });
+
+  const random = createSeededRandom(hashString(`${SESSION_SEED}-${seedKey}-connection`));
+  const choiceRange = Math.min(3, rankedFigures.length);
+  const choiceIndex = Math.min(choiceRange - 1, Math.floor(random() * choiceRange));
+  return rankedFigures[choiceIndex];
+}
+
+function buildConnectionPath(startPoint, endPoint, seedKey, sceneRect) {
+  const random = createSeededRandom(hashString(`${SESSION_SEED}-${seedKey}-path`));
+  const dx = endPoint.x - startPoint.x;
+  const curveX = clamp(Math.abs(dx) * (0.18 + random() * 0.16), 42, sceneRect.width * 0.2);
+  const curveY = (random() - 0.5) * clamp(sceneRect.height * 0.28, 90, 220);
+  const direction = dx >= 0 ? 1 : -1;
+
+  const cp1x = startPoint.x + curveX * direction;
+  const cp1y = startPoint.y + curveY;
+  const cp2x = endPoint.x - curveX * direction;
+  const cp2y = endPoint.y - curveY;
+
+  return `M ${startPoint.x.toFixed(1)} ${startPoint.y.toFixed(1)} C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${endPoint.x.toFixed(1)} ${endPoint.y.toFixed(1)}`;
+}
+
+function renderSceneConnections(scene) {
+  if (!scene.connectionLayer) {
+    return;
+  }
+
+  const sceneRect = scene.root.getBoundingClientRect();
+  const figureNodes = Array.from(scene.figureCluster.querySelectorAll(".figure-image"));
+  const tileNodes = Array.from(scene.cloud.querySelectorAll(".tile"));
+
+  scene.connectionLayer.setAttribute("viewBox", `0 0 ${sceneRect.width} ${sceneRect.height}`);
+  scene.connectionLayer.setAttribute("preserveAspectRatio", "none");
+
+  if (!figureNodes.length || !tileNodes.length) {
+    scene.connectionLayer.replaceChildren();
+    return;
+  }
+
+  const figureMetrics = figureNodes
+    .map((node) => getNodeMetrics(node, sceneRect))
+    .filter(Boolean);
+
+  const fragment = document.createDocumentFragment();
+
+  tileNodes.forEach((tile, index) => {
+    const tileMetrics = getNodeMetrics(tile, sceneRect);
+    if (!tileMetrics) {
+      return;
+    }
+
+    const seedKey = `${scene.index}-${tile.dataset.file || index}-${index}`;
+    const figureMetricsTarget = pickConnectionFigure(tileMetrics, figureMetrics, seedKey);
+    if (!figureMetricsTarget) {
+      return;
+    }
+
+    const startPoint = getAnchorPoint(figureMetricsTarget, tileMetrics.centerX);
+    const endPoint = getAnchorPoint(tileMetrics, figureMetricsTarget.centerX);
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("class", "connection-path");
+    path.setAttribute("d", buildConnectionPath(startPoint, endPoint, seedKey, sceneRect));
+    fragment.appendChild(path);
+  });
+
+  scene.connectionLayer.replaceChildren(fragment);
+}
+
+function scheduleSceneConnections(scene) {
+  if (scene.connectionFrame) {
+    return;
+  }
+
+  scene.connectionFrame = window.requestAnimationFrame(() => {
+    scene.connectionFrame = null;
+    renderSceneConnections(scene);
+  });
+}
+
 function loadImageMeta(file) {
   return tryResolveImagePath(file, IMAGE_BASE_PATHS, activeImageBase).then((result) => {
     if (result.found) {
@@ -301,6 +417,10 @@ function buildFigures(scene, layout) {
     figure.style.top = `${clamp(y, minY, maxY).toFixed(1)}px`;
     figure.style.width = `${width.toFixed(1)}px`;
     figure.style.setProperty("--figure-opacity", opacity.toFixed(2));
+    figure.addEventListener("load", () => scheduleSceneConnections(scene), { once: true });
+    if (figure.complete && figure.naturalWidth > 0) {
+      scheduleSceneConnections(scene);
+    }
     attachSrcFallback(figure, FIGURE_FILE, FIGURE_BASE_PATHS, activeFigureBase, (resolvedBase) => {
       activeFigureBase = normalizeBasePath(resolvedBase);
     });
@@ -390,9 +510,9 @@ function choosePosition(width, height, file, layout, sceneIndex) {
   };
 }
 
-function beginDrag(event, tile, sceneRoot) {
+function beginDrag(event, tile, scene) {
   const rect = tile.getBoundingClientRect();
-  const sceneRect = sceneRoot.getBoundingClientRect();
+  const sceneRect = scene.root.getBoundingClientRect();
   const startOffsetX = event.clientX - rect.left;
   const startOffsetY = event.clientY - rect.top;
   tile.classList.add("is-dragging");
@@ -413,6 +533,7 @@ function beginDrag(event, tile, sceneRoot) {
     );
     tile.style.left = `${x}px`;
     tile.style.top = `${y}px`;
+    scheduleSceneConnections(scene);
   }
 
   function end(pointerEvent) {
@@ -421,6 +542,7 @@ function beginDrag(event, tile, sceneRoot) {
     tile.removeEventListener("pointermove", move);
     tile.removeEventListener("pointerup", end);
     tile.removeEventListener("pointercancel", end);
+    scheduleSceneConnections(scene);
   }
 
   tile.addEventListener("pointermove", move);
@@ -469,12 +591,20 @@ function createTile(meta, index, layout, scene, eager = false) {
     () => {
       requestAnimationFrame(() => {
         figure.classList.remove("is-pending");
+        scheduleSceneConnections(scene);
       });
     },
     { once: true }
   );
 
-  figure.addEventListener("pointerdown", (event) => beginDrag(event, figure, scene.root));
+  if (img.complete && img.naturalWidth > 0) {
+    requestAnimationFrame(() => {
+      figure.classList.remove("is-pending");
+      scheduleSceneConnections(scene);
+    });
+  }
+
+  figure.addEventListener("pointerdown", (event) => beginDrag(event, figure, scene));
   figure.addEventListener("click", () => {
     scene.root.querySelectorAll(".tile.is-active").forEach((node) => {
       node.classList.remove("is-active");
@@ -506,6 +636,8 @@ async function appendBatch(startIndex, count, token, layout, scene, eager = fals
     const tile = createTile(meta, index, layout, scene, eager);
     scene.cloud.appendChild(tile);
   });
+
+  scheduleSceneConnections(scene);
 
   return endIndex;
 }
@@ -555,6 +687,11 @@ async function rebuildLayout() {
   const token = renderToken;
 
   scenes.forEach((scene) => {
+    if (scene.connectionFrame) {
+      window.cancelAnimationFrame(scene.connectionFrame);
+      scene.connectionFrame = null;
+    }
+    scene.connectionLayer.replaceChildren();
     scene.cloud.innerHTML = "";
     scene.figureCluster.innerHTML = "";
   });
@@ -563,6 +700,7 @@ async function rebuildLayout() {
     const revealPlan = getRevealPlan(scene.files.length);
     const layout = getLayoutConfig(scene, revealPlan);
     buildFigures(scene, layout);
+    scheduleSceneConnections(scene);
     const nextIndex = await appendBatch(0, revealPlan.initialBatchSize, token, layout, scene, true);
     queueRemainingBatches(nextIndex, token, layout, scene, revealPlan);
   });
